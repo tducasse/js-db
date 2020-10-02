@@ -1,5 +1,5 @@
 {
-  "name": "js-db",
+  "name": "@tducasse/js-db",
   "version": "0.0.1",
   "description": "A very tiny js in-memory database, using native JavaScript objects",
   "main": "dist/cjs/index.js",

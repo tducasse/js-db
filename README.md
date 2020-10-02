@@ -9,5 +9,5 @@ A very tiny js in-memory database, using native JavaScript objects
 ## Install
 
 ```sh
-npm i js-db
+npm i @tducasse/js-db
 ```
