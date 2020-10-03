@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-  - "stable"
+  - stable
 cache:
   directories:
-    - "node_modules"
+    - node_modules
 before_install:
   - npm update
 install:
@@ -11,3 +11,13 @@ install:
 script:
   - npm test
   - npm run coveralls
+deploy:
+  provider: npm
+  email: thibaud.ducasse@gmail.com
+  api_key:
+    secure: tqyEjFGHYGP77K0bR6mXBywvAwarUeIWj/7OgXahj64geLljmKLNVH5t6S3tu1x2wSfDa4A2/lkwRZJLAaiPsTdp1ST8e8VqKIi2TLx+omC1CyJp9uz7k7XaCLjKDeYX+kYlEnzrLNcVzIDdkNrFA2OuMY+19DETJHC9GDuPRtkwHB5v032dTfkT7srzmc9TmfLRA6ewTGZfCCxaUhLRBa0k76a8CeVBDN5GNutKvBwehtatIDaH/WxuH7RDooc+X5pOlQYi3//1GwEqXOVWMuvlfoorA5vjru0nijvxYT38eucu2aH7wSEphwhbqDVq0l+mlbu5NjGDhN3nZmggxnZfTd6iUoYsiazbIYVO5eXbQaE+AS+A5zhpc2p6GI0Ku8KLok+MqLZzBnuClqRz33GtciIbUumSQdcthaoidlTD4l8fJdoRN2ZhJDfVJt1sDa8xRKo86zugt4LUzl2F2eOEss80kBTZTjKtQkmzpGEeC51/M6/z64csgooZDVrLLxyzGqwduMR8wqDpO1Rl8jMCbZSOm0DipJZcm9exjNHUCio9B/+7cRjoNvLkojUtBpuAEXk+MeTkVoqlMrxTSyQXqgIWDT3JWxC4ey51TRYcXjasCnHWHhGTx8uNnVG0fjmssMn5Qsb4N03/OYrVAmY1eIHUWqss2tIlqBeg8fs=
+  on:
+    tags: true
+    repo: tducasse/js-db
+    branch: main
+  skip_cleanup: "true"
