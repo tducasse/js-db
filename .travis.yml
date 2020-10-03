@@ -10,6 +10,7 @@ install:
   - npm install
 script:
   - npm test
+  - npm run tsd
   - npm run coveralls
 deploy:
   provider: npm
