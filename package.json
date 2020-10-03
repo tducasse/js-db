@@ -10,7 +10,8 @@
     "test:watch": "jest --watch",
     "tsd": "tsd",
     "prepare": "rollup --config",
-    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "postversion": "git push && git push --tags"
   },
   "files": [
     "dist/cjs/*",
