@@ -1,6 +1,6 @@
 {
   "name": "@tducasse/js-db",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A very tiny js in-memory database, using native JavaScript objects",
   "main": "dist/cjs/index.js",
   "types": "types/index.d.ts",
