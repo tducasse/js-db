@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/tducasse/js-db.svg?branch=main)](https://travis-ci.org/tducasse/js-db)
 [![Coverage Status](https://coveralls.io/repos/github/tducasse/js-db/badge.svg?branch=main)](https://coveralls.io/github/tducasse/js-db?branch=main)
 
-A very tiny js in-memory database, using native JavaScript objects. Inspired by the mongodb syntax, but it implements just a very little subset of it.
+A very tiny js in-memory database, using native JavaScript objects. Inspired by mongodb's syntax, even though it implements a subset of it.
 
 ## Install
 
@@ -165,10 +165,10 @@ db.users.insert({ name: "John" });
 
 db.users.update({ name: "John" }, { $set: { "address.city": "Melbourne" } });
 const users = db.users.find();
-// [{ name: "Mark", address: { city: "Melbourne" }}]
+// [{ name: "John", address: { city: "Melbourne" }}]
 
 const user = db.users.findOne({ "address.city": "Melbourne" });
-// [{ name: "Mark", address: { city: "Melbourne" }}]
+// [{ name: "John", address: { city: "Melbourne" }}]
 ```
 
 ## Creating a shell
