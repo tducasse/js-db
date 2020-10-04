@@ -154,3 +154,51 @@ db.users.update({ name: "Joe" }, { $push: { cities: "Melbourne" } });
 const users = db.users.find();
 // [{ name: "Mark"}, { name: "Joe", cities: ["Melbourne"] }]
 ```
+
+## Creating a shell
+
+You can access the database in your code, importing the `db` object, but you can also create a separate npm script to run it through a Node repl.
+
+```js
+// start a socket on 1337
+net
+  .createServer((socket) => {
+    const r = repl.start({
+      prompt: "js-db>",
+      input: socket,
+      output: socket,
+      terminal: true,
+      preview: false,
+    });
+    // share the `db` object with the socket
+    r.context.db = db;
+  })
+  .listen(1337);
+```
+
+```js
+// in cli.js
+import net from "net";
+
+const sock = net.connect(1337);
+
+process.stdin.pipe(sock);
+sock.pipe(process.stdout);
+
+process.stdin.on("data", (b) => {
+  if (b.length === 1 && b[0] === 4) {
+    process.stdin.emit("end");
+  }
+});
+```
+
+```js
+// in package.json
+{
+  "scripts:
+    // I use esm, but you get the idea
+    "cli": "node -r esm cli.js"
+}
+```
+
+Now, when you run `npm run cli`, you get a node interactive shell (with autocompletion, etc), in which you can access `db`.
