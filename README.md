@@ -155,6 +155,22 @@ const users = db.users.find();
 // [{ name: "Mark"}, { name: "Joe", cities: ["Melbourne"] }]
 ```
 
+### Note on the query/update object
+
+You can access nested keys using the dot-notation syntax.
+
+```js
+register("users");
+db.users.insert({ name: "John" });
+
+db.users.update({ name: "John" }, { $set: { "address.city": "Melbourne" } });
+const users = db.users.find();
+// [{ name: "Mark", address: { city: "Melbourne" }}]
+
+const user = db.users.findOne({ "address.city": "Melbourne" });
+// [{ name: "Mark", address: { city: "Melbourne" }}]
+```
+
 ## Creating a shell
 
 You can access the database in your code, importing the `db` object, but you can also create a separate npm script to run it through a Node repl.

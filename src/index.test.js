@@ -1,4 +1,11 @@
-import { db, register, reset, seed } from "./index";
+import {
+  db,
+  getNestedValue,
+  register,
+  reset,
+  seed,
+  setNestedValue,
+} from "./index";
 
 afterEach(() => {
   reset();
@@ -55,9 +62,17 @@ test("remove an object from a collection", () => {
 test("findOne finds an object in a collection", () => {
   register("collection");
   db.collection.insert([{ name: "name" }, { name: "name2" }]);
-  let item = db.collection.findOne({ name: "name2" });
+  const item = db.collection.findOne({ name: "name2" });
   expect(item).not.toBeUndefined();
-  item = db.collection.findOne();
+});
+
+test("findOne works with nested fields", () => {
+  register("collection");
+  db.collection.insert([
+    { name: "name", deep: { field: "something" } },
+    { name: "name2" },
+  ]);
+  const item = db.collection.findOne({ "deep.field": "something" });
   expect(item).not.toBeUndefined();
 });
 
@@ -65,6 +80,19 @@ test("find finds multiple objects in a collection", () => {
   register("collection");
   db.collection.insert([{ name: "name" }, { name: "name" }, { name: "name2" }]);
   let items = db.collection.find({ name: "name" });
+  expect(items).toHaveLength(2);
+  items = db.collection.find();
+  expect(items).toHaveLength(3);
+});
+
+test("find works with nested fields", () => {
+  register("collection");
+  db.collection.insert([
+    { name: "name", nested: { field: "value" } },
+    { name: "name", nested: { field: "value" } },
+    { name: "name2" },
+  ]);
+  let items = db.collection.find({ name: "name", "nested.field": "value" });
   expect(items).toHaveLength(2);
   items = db.collection.find();
   expect(items).toHaveLength(3);
@@ -81,6 +109,21 @@ test("update with $set on multiple objects in a collection", () => {
   });
 });
 
+test("update with $set works with nested fields", () => {
+  register("collection");
+  db.collection.insert([{ name: "name" }, { name: "name" }, { name: "name2" }]);
+  db.collection.update(
+    { name: "name" },
+    { $set: { "newProp.nested": "something" } }
+  );
+  const items = db.collection.find({ name: "name" });
+  items.forEach((item) => {
+    expect(item).toHaveProperty("newProp");
+    expect(item.newProp).toHaveProperty("nested");
+    expect(item.newProp.nested).toBe("something");
+  });
+});
+
 test("update with $push on multiple objects in a collection", () => {
   register("collection");
   db.collection.insert([
@@ -93,6 +136,25 @@ test("update with $push on multiple objects in a collection", () => {
   items.forEach((item) => {
     expect(item).toHaveProperty("array");
     expect(item.array).toContain("something");
+  });
+});
+
+test("update with $push works with nested fields", () => {
+  register("collection");
+  db.collection.insert([
+    { name: "name", array: ["thingo"] },
+    { name: "name" },
+    { name: "name2" },
+  ]);
+  db.collection.update(
+    { name: "name" },
+    { $push: { "newProp.nested": "something" } }
+  );
+  const items = db.collection.find({ name: "name" });
+  items.forEach((item) => {
+    expect(item).toHaveProperty("newProp");
+    expect(item.newProp).toHaveProperty("nested");
+    expect(item.newProp.nested).toContain("something");
   });
 });
 
@@ -114,4 +176,28 @@ test("seed initialises data", () => {
   const store = db.getStore();
   expect(store).toHaveProperty("collection1");
   expect(store).toHaveProperty("collection2");
+});
+
+test("getNestedValue works with nested values and standard values", () => {
+  const item = { nested: { field: "nested value" }, standard: "value" };
+  let value = getNestedValue(item, "nested.field");
+  expect(value).toBe("nested value");
+  value = getNestedValue(item, "standard");
+  expect(value).toBe("value");
+});
+
+test("setNestedValue works with nested values and standard values", () => {
+  const item = {
+    nested: { field: "nested value" },
+    standard: "value",
+  };
+  setNestedValue(item, "nested.field", "new nested value");
+  expect(item.nested.field).toBe("new nested value");
+  setNestedValue(item, "standard", "new value");
+  expect(item.standard).toBe("new value");
+  setNestedValue(item, "completely.new.nested.key", "super nested value");
+  expect(item.completely.new.nested.key).toBe("super nested value");
+  setNestedValue(item, "nested.otherField", "in a nested key");
+  expect(item.nested.otherField).toBe("in a nested key");
+  expect(item.nested.field).toBe("new nested value");
 });

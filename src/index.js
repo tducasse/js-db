@@ -1,3 +1,28 @@
+export const getNestedValue = (item, key) => {
+  try {
+    return key.split(".").reduce((acc, curr) => acc[curr], item);
+  } catch (err) {
+    return undefined;
+  }
+};
+
+export const setNestedValue = (obj, path, value) => {
+  let newPath = path;
+  if (typeof path === "string") {
+    newPath = newPath.split(".");
+  }
+  if (newPath.length > 1) {
+    if (!obj[newPath[0]]) {
+      // eslint-disable-next-line no-param-reassign
+      obj[newPath[0]] = {};
+    }
+    setNestedValue(obj[newPath.shift()], newPath, value);
+  } else {
+    // eslint-disable-next-line no-param-reassign
+    obj[newPath[0]] = value;
+  }
+};
+
 const methods = (collection, store) => ({
   // inserts the new `item` in the `collection`
   insert: (item) => store[collection].push(...[].concat(item)),
@@ -5,21 +30,21 @@ const methods = (collection, store) => ({
   find: (query = {}) =>
     store[collection].filter((el) =>
       Object.entries(query).every(([key, val]) =>
-        [].concat(el[key]).includes(val)
+        [].concat(getNestedValue(el, key)).includes(val)
       )
     ),
   // counts all the elements that matches `query`
   count: (query = {}) =>
     store[collection].filter((el) =>
       Object.entries(query).every(([key, val]) =>
-        [].concat(el[key]).includes(val)
+        [].concat(getNestedValue(el, key)).includes(val)
       )
     ).length,
   // gets the first element that matches `query`
   findOne: (query = {}) =>
     store[collection].find((el) =>
       Object.entries(query).every(([key, val]) =>
-        [].concat(el[key]).includes(val)
+        [].concat(getNestedValue(el, key)).includes(val)
       )
     ),
   // replaces `$set` in every element that matches `query`
@@ -28,15 +53,23 @@ const methods = (collection, store) => ({
     store[collection].forEach((el, idx) => {
       if (
         Object.entries(query).every(([key, val]) =>
-          [].concat(el[key]).includes(val)
+          [].concat(getNestedValue(el, key)).includes(val)
         )
       ) {
         const push = {};
         Object.entries($push).forEach(([key, val]) => {
-          push[key] = (el[key] || []).concat(val);
+          setNestedValue(
+            push,
+            key,
+            (getNestedValue(el, key) || []).concat(val)
+          );
+        });
+        const set = {};
+        Object.entries($set).forEach(([key, val]) => {
+          setNestedValue(push, key, val);
         });
         // eslint-disable-next-line no-param-reassign
-        store[collection][idx] = { ...el, ...$set, ...push };
+        store[collection][idx] = { ...el, ...set, ...push };
       }
     }),
   // removes every element that matches `query`
@@ -44,7 +77,7 @@ const methods = (collection, store) => ({
     store[collection].forEach(
       (el, idx) =>
         Object.entries(query).every(([key, val]) =>
-          [].concat(el[key]).includes(val)
+          [].concat(getNestedValue(el, key)).includes(val)
         ) && store[collection].splice(idx, 1)
     ),
 });
