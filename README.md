@@ -7,9 +7,25 @@
 A very tiny js in-memory database, using native JavaScript objects. Inspired by mongodb's syntax, even though it implements a subset of it.
 
 ## Install
-
+Using Node:
 ```sh
 npm i @tducasse/js-db
+```
+Or in the browser:
+```html
+<html>
+  <head>
+    <script src="https://unpkg.com/@tducasse/js-db/dist/umd/js-db.js"></script>
+    <script>
+      // the script is exported as 'jsdb'
+      jsdb.register("users")
+      jsdb.db.users.insert({name: "name"});
+      const user = jsdb.db.users.findOne();
+      console.log(user.name)
+      // "name"
+    </script>
+  </head>
+</html>
 ```
 
 ## Docs
