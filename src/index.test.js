@@ -145,6 +145,16 @@ test("update with $set works with nested fields", () => {
   expect(item.newProp.nested2).toBe("something else again");
 });
 
+test(`update with $set doesn't merge arrays`, () => {
+  register("collection");
+  db.collection.insert([{ nested: { array: [1, 2] } }]);
+  db.collection.update({}, { $set: { "nested.array": [3, 4] } });
+  const item = db.collection.findOne();
+  expect(item.nested.array).toHaveLength(2);
+  expect(item.nested.array).toContain(3);
+  expect(item.nested.array).toContain(4);
+});
+
 test("update with $push on multiple objects in a collection", () => {
   register("collection");
   db.collection.insert([
@@ -254,4 +264,19 @@ test(`deepMerge merges nested properties`, () => {
   const result = deepMerge(a, z);
   expect(result.b.c).toBe(1);
   expect(result.b.d).toBe(2);
+});
+
+test(`deepMerge doesn't merge arrays`, () => {
+  const a = {
+    b: [1, 2],
+  };
+
+  const z = {
+    b: [3, 4],
+  };
+
+  const result = deepMerge(a, z);
+  expect(result.b).toHaveLength(2);
+  expect(result.b).toContain(3);
+  expect(result.b).toContain(4);
 });
