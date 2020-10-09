@@ -153,6 +153,13 @@ test(`update with $set doesn't merge arrays`, () => {
   expect(item.nested.array).toHaveLength(2);
   expect(item.nested.array).toContain(3);
   expect(item.nested.array).toContain(4);
+  db.collection.update(
+    {},
+    { $set: { "nested.array": item.nested.array.filter((el) => el !== 3) } }
+  );
+  const newItem = db.collection.findOne();
+  expect(newItem.nested.array).toHaveLength(1);
+  expect(newItem.nested.array).toContain(4);
 });
 
 test("update with $push on multiple objects in a collection", () => {

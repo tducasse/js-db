@@ -25,8 +25,14 @@ export const setNestedValue = (obj, path, value) => {
 
 export const deepMerge = (current, updates) => {
   Object.keys(updates).forEach((key) => {
-    // eslint-disable-next-line no-prototype-builtins
-    if (!current.hasOwnProperty(key) || typeof updates[key] !== "object")
+    if (Array.isArray(updates[key]) && Array.isArray(current[key])) {
+      // eslint-disable-next-line no-param-reassign
+      current[key] = updates[key];
+    } else if (
+      // eslint-disable-next-line no-prototype-builtins
+      !current.hasOwnProperty(key) ||
+      typeof updates[key] !== "object"
+    )
       // eslint-disable-next-line no-param-reassign
       current[key] = updates[key];
     else deepMerge(current[key], updates[key]);
@@ -77,7 +83,7 @@ const methods = (collection, store) => ({
         });
         const set = {};
         Object.entries($set).forEach(([key, val]) => {
-          setNestedValue(push, key, val);
+          setNestedValue(set, key, val);
         });
         // eslint-disable-next-line no-param-reassign
         store[collection][idx] = deepMerge(deepMerge(el, set), push);
