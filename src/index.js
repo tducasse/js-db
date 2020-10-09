@@ -23,6 +23,17 @@ export const setNestedValue = (obj, path, value) => {
   }
 };
 
+export const deepMerge = (current, updates) => {
+  Object.keys(updates).forEach((key) => {
+    // eslint-disable-next-line no-prototype-builtins
+    if (!current.hasOwnProperty(key) || typeof updates[key] !== "object")
+      // eslint-disable-next-line no-param-reassign
+      current[key] = updates[key];
+    else deepMerge(current[key], updates[key]);
+  });
+  return current;
+};
+
 const methods = (collection, store) => ({
   // inserts the new `item` in the `collection`
   insert: (item) => store[collection].push(...[].concat(item)),
@@ -69,7 +80,7 @@ const methods = (collection, store) => ({
           setNestedValue(push, key, val);
         });
         // eslint-disable-next-line no-param-reassign
-        store[collection][idx] = { ...el, ...set, ...push };
+        store[collection][idx] = deepMerge(deepMerge(el, set), push);
       }
     }),
   // removes every element that matches `query`

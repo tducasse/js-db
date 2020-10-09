@@ -1,5 +1,6 @@
 import {
   db,
+  deepMerge,
   getNestedValue,
   register,
   reset,
@@ -122,6 +123,26 @@ test("update with $set works with nested fields", () => {
     expect(item.newProp).toHaveProperty("nested");
     expect(item.newProp.nested).toBe("something");
   });
+  db.collection.update(
+    { name: "name2" },
+    { $set: { "newProp.nested1": "something" } }
+  );
+  let item = db.collection.findOne({ name: "name2" });
+  expect(item.newProp.nested1).toBe("something");
+  db.collection.update(
+    { name: "name2" },
+    { $set: { "newProp.nested2": "something else" } }
+  );
+  item = db.collection.findOne({ name: "name2" });
+  expect(item.newProp.nested1).toBe("something");
+  expect(item.newProp.nested2).toBe("something else");
+  db.collection.update(
+    { name: "name2" },
+    { $set: { "newProp.nested2": "something else again" } }
+  );
+  item = db.collection.findOne({ name: "name2" });
+  expect(item.newProp.nested1).toBe("something");
+  expect(item.newProp.nested2).toBe("something else again");
 });
 
 test("update with $push on multiple objects in a collection", () => {
@@ -200,4 +221,37 @@ test("setNestedValue works with nested values and standard values", () => {
   setNestedValue(item, "nested.otherField", "in a nested key");
   expect(item.nested.otherField).toBe("in a nested key");
   expect(item.nested.field).toBe("new nested value");
+});
+
+test(`setNestedValue doesn't override existing nested values`, () => {
+  const item = {
+    nested: {
+      first: {
+        value: 1,
+      },
+      second: {
+        value: 2,
+      },
+    },
+  };
+  const first = "first";
+  setNestedValue(item, `nested.${first}.value`, "one");
+  expect(item.nested.first.value).toBe("one");
+  expect(item.nested.second.value).toBe(2);
+});
+
+test(`deepMerge merges nested properties`, () => {
+  const a = {
+    b: {
+      c: 1,
+    },
+  };
+  const z = {
+    b: {
+      d: 2,
+    },
+  };
+  const result = deepMerge(a, z);
+  expect(result.b.c).toBe(1);
+  expect(result.b.d).toBe(2);
 });
