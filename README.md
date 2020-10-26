@@ -111,7 +111,7 @@ Like `find()`, except it just returns the number of elements that match the quer
 register("users");
 db.users.insert([{ name: "John" }, { name: "Joe" }]);
 
-const count = db.users.find({ name: "John" });
+const count = db.users.count({ name: "John" });
 // 1
 ```
 
