@@ -35,6 +35,10 @@ export type DB = DBFunc & {
   [collectionName: string]: RegisteredCollection;
 };
 
+export interface PersistenceConfig {
+  path?: string
+}
+
 /**
  * Register a collection in the database
  * @param collection The name of the collection to register
@@ -51,6 +55,13 @@ export function reset(): boolean;
  * @param seeds An object that looks like {collection:[{}, {}, ...], ...}
  */
 export function seed(seeds: Store): boolean;
+
+/**
+ * Enables auto persistence.
+ * In browser environment LocalStorage is used. Otherwise config.path is required.
+ * @param config
+ */
+export function enableAutoPersistence(config?: PersistenceConfig): void;
 
 /**
  * This is the convenience database object we export

@@ -1,6 +1,7 @@
 import {
   db,
   deepMerge,
+  enableAutoPersistence,
   getNestedValue,
   register,
   reset,
@@ -287,3 +288,42 @@ test(`deepMerge doesn't merge arrays`, () => {
   expect(result.b).toContain(3);
   expect(result.b).toContain(4);
 });
+
+test(`insert persists to localStorage`, () => {
+  enableAutoPersistence()
+  register('collection')
+  db.collection.insert({ name: 'name'} )
+  expect(localStorage.getItem('js-db-data')).toEqual('{"collection":[{"name":"name"}]}')
+})
+
+test(`enableAutoPersistence loads from localStorage`, () => {
+  localStorage.setItem('js-db-data', '{"collection":[{"name":"name"}]}')
+  enableAutoPersistence()
+  register('collection')
+  expect(db.getStore().collection).toHaveLength(1);
+})
+
+test(`update persists to localStorage`, () => {
+  localStorage.setItem('js-db-data', '{"collection":[{"name":"name"}]}')
+  enableAutoPersistence()
+  register('collection')
+  db.collection.update({ name: 'name' }, { $set: { name: 'new name' } })
+  expect(localStorage.getItem('js-db-data')).toEqual('{"collection":[{"name":"new name"}]}')
+})
+
+test(`remove persists to localStorage`, () => {
+  localStorage.setItem('js-db-data', '{"collection":[{"name":"name"},{"name":"another name"}]}')
+  enableAutoPersistence()
+  register('collection')
+  db.collection.remove({ name: 'name' })
+  expect(localStorage.getItem('js-db-data')).toEqual('{"collection":[{"name":"another name"}]}')
+})
+
+test(`reset persists to localStorage`, () => {
+  localStorage.setItem('js-db-data', '{"collection":[{"name":"name"}]}')
+  enableAutoPersistence()
+  register('collection')
+  db.collection.insert({ name: 'another name'} )
+  reset()
+  expect(localStorage.getItem('js-db-data')).toEqual(null)
+})
