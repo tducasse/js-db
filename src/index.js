@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from "fs";
 
 export const getNestedValue = (item, key) => {
   try {
@@ -42,11 +42,26 @@ export const deepMerge = (current, updates) => {
   return current;
 };
 
+const persistence = {
+  config: {
+    type: null,
+    path: null,
+  },
+  write: () => {},
+  reset: () => {},
+};
+
+const persist = () => {
+  if (persistence.config.type) {
+    persistence.write();
+  }
+};
+
 const methods = (collection, store) => ({
   // inserts the new `item` in the `collection`
   insert: (item) => {
-    store[collection].push(...[].concat(item))
-    persist()
+    store[collection].push(...[].concat(item));
+    persist();
   },
   // gets all the elements that matches `query`
   find: (query = {}) =>
@@ -92,101 +107,89 @@ const methods = (collection, store) => ({
         });
         // eslint-disable-next-line no-param-reassign
         store[collection][idx] = deepMerge(deepMerge(el, set), push);
-        persist()
+        persist();
       }
     }),
   // removes every element that matches `query`
   remove: (query = {}) => {
     store[collection].forEach(
-        (el, idx) =>
-            Object.entries(query).every(([key, val]) =>
-                [].concat(getNestedValue(el, key)).includes(val)
-            ) && store[collection].splice(idx, 1)
-    )
-    persist()
-  }
+      (el, idx) =>
+        Object.entries(query).every(([key, val]) =>
+          [].concat(getNestedValue(el, key)).includes(val)
+        ) && store[collection].splice(idx, 1)
+    );
+    persist();
+  },
 });
 
-const persist = () => {
-  if (persistence.config.type) {
-    persistence.write()
-  }
-}
+// this is where things actually get stored
+const store = {};
 
 export const enableAutoPersistence = (config = {}) => {
-  if ('undefined' === typeof window) {
-    if ('undefined' === typeof config.path || ! config.path) {
-      throw new Error('config.path is required in non browser environments')
+  if (typeof window === "undefined") {
+    if (typeof config.path === "undefined" || !config.path) {
+      throw new Error("config.path is required in non browser environments");
     }
 
     // if file does not exist try to create it.
     // if creation is not possible log warning to console and don't enable persistence.
-    if ( ! fs.existsSync(config.path)) {
+    if (!fs.existsSync(config.path)) {
       try {
-        const handler = fs.openSync(config.path, 'w')
-        fs.closeSync(handler)
+        const handler = fs.openSync(config.path, "w");
+        fs.closeSync(handler);
       } catch (error) {
-        console.warn('persistence not enabled due to error creating database file:', error.message)
-        return
+        console.warn(
+          "persistence not enabled due to error creating database file:",
+          error.message
+        );
+        return;
       }
     }
 
-    const persistedState = JSON.parse(fs.readFileSync(config.path, 'utf8'))
+    const persistedState = JSON.parse(fs.readFileSync(config.path, "utf8"));
     if (persistedState) {
-      for (let key in persistedState) {
-        store[key] = persistedState[key]
-      }
+      Object.keys(persistedState).forEach((key) => {
+        store[key] = persistedState[key];
+      });
     }
 
     persistence.config = {
-      type: 'file',
-      path: config.path
-    }
+      type: "file",
+      path: config.path,
+    };
 
     persistence.write = () => {
-      fs.writeFileSync(persistence.config.path, JSON.stringify(store))
-    }
+      fs.writeFileSync(persistence.config.path, JSON.stringify(store));
+    };
 
     persistence.reset = () => {
-      fs.unlinkSync(persistence.config.path)
-    }
+      fs.unlinkSync(persistence.config.path);
+    };
   } else {
     persistence.config = {
-      type: 'localstorage',
-      path: 'js-db-data'
-    }
+      type: "localstorage",
+      path: "js-db-data",
+    };
 
     persistence.write = () => {
-      localStorage.setItem(persistence.config.path, JSON.stringify(store))
-    }
+      localStorage.setItem(persistence.config.path, JSON.stringify(store));
+    };
 
     persistence.reset = () => {
-     localStorage.removeItem(persistence.config.path)
-    }
+      localStorage.removeItem(persistence.config.path);
+    };
 
-    const currentData = localStorage.getItem(persistence.config.path)
+    const currentData = localStorage.getItem(persistence.config.path);
     if (currentData) {
-      const persistedState = JSON.parse(currentData)
+      const persistedState = JSON.parse(currentData);
       if (persistedState) {
-        for (let key in persistedState) {
-          store[key] = persistedState[key]
-        }
+        Object.keys(persistedState).forEach((key) => {
+          store[key] = persistedState[key];
+        });
       }
     }
   }
-}
-
-const persistence = {
-  config: {
-    type: null,
-    path: null
-  },
-  write: () => {},
-  reset: () => {}
-}
-
-// this is where things actually get stored
-const store = {};
+};
 
 /**
  * Access the store directly
@@ -201,7 +204,7 @@ export const db = { getStore };
  * @param {String} collection The name of the collection to register
  */
 export const register = (collection) => {
-  if ('undefined' === typeof store[collection]) {
+  if (typeof store[collection] === "undefined") {
     store[collection] = [];
   }
   db[collection] = methods(collection, store);
@@ -234,6 +237,6 @@ export const reset = () => {
     return true;
   });
   if (persistence.config.type) {
-    persistence.reset()
+    persistence.reset();
   }
 };

@@ -11,7 +11,9 @@
     "tsd": "tsd",
     "prepare": "rollup --config",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src"
   },
   "files": [
     "dist/cjs/*",
